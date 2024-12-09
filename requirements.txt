@@ -1,6 +1,7 @@
 streamlit
 pandas
-numpy==1.21.6  # Compatible with scikit-learn 1.0.2
-scikit-learn==1.0.2
-xgboost
-joblib
+numpy>=1.20.0
+scikit-learn>=1.0.2
+xgboost>=1.5.0
+catboost>=1.0.0
+joblib>=1.1.0
