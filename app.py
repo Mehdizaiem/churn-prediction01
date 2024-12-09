@@ -1,16 +1,21 @@
 import streamlit as st
 import pandas as pd
 import joblib
+from catboost import CatBoostClassifier
 
-# Load models and info
 @st.cache_resource
 def load_models():
     models = {
         'GBM': joblib.load('models/GBM_model.joblib'),
-        'Random Forest': joblib.load('models/RandomForest_model.joblib'),
+        'Random Forest': joblib.load('models/Random Forest_model.joblib'),
         'XGBoost': joblib.load('models/XGBoost_model.joblib'),
         'Stacking': joblib.load('models/Stacking_model.joblib')
     }
+    # Load CatBoost separately
+    catboost = CatBoostClassifier()
+    catboost.load_model('models/CatBoost_model.cbm')
+    models['CatBoost'] = catboost
+    
     return models
 
 def main():
@@ -19,27 +24,23 @@ def main():
     # Load models and info
     models = load_models()
     model_info = joblib.load('models/model_info.joblib')
-    metrics = joblib.load('models/model_metrics.joblib')
     
     # Sidebar - Model selection
     st.sidebar.header('Select Model')
-    selected_model = st.sidebar.selectbox('Choose a model', 
-        ['GBM', 'Random Forest', 'XGBoost', 'Stacking'])
-    
-    # Show model metrics
-    st.sidebar.header('Model Performance')
-    st.sidebar.write(f"Accuracy: {metrics[selected_model]['accuracy']:.3f}")
-    st.sidebar.write(f"ROC-AUC: {metrics[selected_model]['roc_auc']:.3f}")
+    selected_model = st.sidebar.selectbox('Choose a model', list(models.keys()))
     
     # Main panel - Input features
     st.header('Enter Customer Information')
     
-    # Create input fields for your features
+    # Create input fields based on your features
     input_data = {}
-    for feature in model_info['feature_names']:
-        if feature in ['International plan', 'Voice mail plan']:
+    for feature in model_info['features']:
+        # Check feature type
+        if model_info['feature_types'][feature] == 'object':
+            # Categorical features
             input_data[feature] = st.selectbox(feature, ['Yes', 'No'])
         else:
+            # Numerical features
             input_data[feature] = st.number_input(feature, value=0.0)
     
     # Make prediction
