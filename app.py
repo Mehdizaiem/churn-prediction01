@@ -8,7 +8,7 @@ def load_models():
         'GBM': joblib.load('models/GBM_model.joblib'),
         'Random Forest': joblib.load('models/Random Forest_model.joblib'),
         'XGBoost': joblib.load('models/XGBoost_model.joblib'),
-        'Stacking': joblib.load('models/Stacking_model.joblib')
+    
     }
     return models
 
