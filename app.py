@@ -19,9 +19,8 @@ def load_models():
         # List of expected model files
         model_files = [
             'GBM_model.joblib',
-            'Random Forest_model.joblib',  # Added RF back
-            'XGBoost_model.joblib',
-            'Stacking_model.joblib'
+            'Random Forest_model.joblib',
+            'XGBoost_model.joblib'
         ]
         
         for model_file in model_files:
@@ -31,20 +30,20 @@ def load_models():
                     model_name = model_file.replace('_model.joblib', '')
                     model = joblib.load(model_path)
                     
-                    # Special handling for XGBoost models
                     if model_name == 'XGBoost':
-                        model.set_params(enable_categorical=False, use_label_encoder=False)
+                        # Set XGBoost params after loading
+                        model.set_params(
+                            use_label_encoder=False,
+                            enable_categorical=False
+                        )
                     
                     models[model_name] = model
             except Exception as e:
                 st.warning(f"Error loading {model_file}: {str(e)}")
                 continue
         
-        if not models:
-            st.error("No models could be loaded. Please check model files.")
-            return None
-            
-        return models
+        return models if models else None
+        
     except Exception as e:
         st.error(f"Error loading models: {str(e)}")
         return None
