@@ -28,16 +28,7 @@ def load_models():
                 model_path = os.path.join('models', model_file)
                 if os.path.exists(model_path):
                     model_name = model_file.replace('_model.joblib', '')
-                    model = joblib.load(model_path)
-                    
-                    if model_name == 'XGBoost':
-                        # Set XGBoost params after loading
-                        model.set_params(
-                            use_label_encoder=False,
-                            enable_categorical=False
-                        )
-                    
-                    models[model_name] = model
+                    models[model_name] = joblib.load(model_path)
             except Exception as e:
                 st.warning(f"Error loading {model_file}: {str(e)}")
                 continue
