@@ -1,6 +1,6 @@
 streamlit
 pandas
-scikit-learn==1.2.2
-numpy>=1.24.0
+numpy==1.21.6  # Compatible with scikit-learn 1.0.2
+scikit-learn==1.0.2
 xgboost
 joblib
