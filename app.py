@@ -10,28 +10,37 @@ MODELS_DIR = "models"
 
 @st.cache_resource
 def load_models():
+    """
+    Load all trained models from the models directory
+    """
     models = {}
-    model_files = [
-        'GBM_model.joblib',
-        'Random Forest_model.joblib'
-    ]
-    
-    for model_file in model_files:
-        try:
-            model_path = os.path.join('models', model_file)
-            if os.path.exists(model_path):
-                # Load the dictionary containing model and version info
-                saved_dict = joblib.load(model_path)
-                model_name = model_file.replace('_model.joblib', '')
-                # Extract just the model
-                models[model_name] = saved_dict['model']
-                # Print version info for debugging
-                st.write(f"Loading {model_name} trained with scikit-learn {saved_dict['created_with']['sklearn']}")
-        except Exception as e:
-            st.warning(f"Error loading {model_file}: {str(e)}")
-            continue
-    
-    return models if models else None
+    try:
+        # Only try to load these two models
+        model_files = [
+            'GBM_model.joblib',
+            'Random Forest_model.joblib'
+        ]
+        
+        for model_file in model_files:
+            try:
+                model_path = os.path.join('models', model_file)
+                if os.path.exists(model_path):
+                    model_name = model_file.replace('_model.joblib', '')
+                    # Simple load with error handling
+                    try:
+                        models[model_name] = joblib.load(model_path)
+                        print(f"Successfully loaded {model_name}")
+                    except Exception as e:
+                        print(f"Error loading {model_name}: {str(e)}")
+            except Exception as e:
+                print(f"File error with {model_file}: {str(e)}")
+                continue
+        
+        return models if models else None
+        
+    except Exception as e:
+        print(f"General error: {str(e)}")
+        return None
 
 
 def create_feature_input(feature, feature_type):
