@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import joblib
-from catboost import CatBoostClassifier
 
 # Load models and info
 @st.cache_resource
@@ -12,11 +11,6 @@ def load_models():
         'XGBoost': joblib.load('models/XGBoost_model.joblib'),
         'Stacking': joblib.load('models/Stacking_model.joblib')
     }
-    # Load CatBoost separately
-    catboost = CatBoostClassifier()
-    catboost.load_model('models/CatBoost_model.cbm')
-    models['CatBoost'] = catboost
-    
     return models
 
 def main():
@@ -29,7 +23,8 @@ def main():
     
     # Sidebar - Model selection
     st.sidebar.header('Select Model')
-    selected_model = st.sidebar.selectbox('Choose a model', list(models.keys()))
+    selected_model = st.sidebar.selectbox('Choose a model', 
+        ['GBM', 'Random Forest', 'XGBoost', 'Stacking'])
     
     # Show model metrics
     st.sidebar.header('Model Performance')
