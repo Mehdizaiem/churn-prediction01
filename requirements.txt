@@ -1,6 +1,6 @@
 streamlit
 pandas
-numpy
-Scikit-learn==1.4.2
+numpy>=1.24.0
+scikit-learn==1.0.2  # Adjust this based on the training environment
 xgboost
 joblib
