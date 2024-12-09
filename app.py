@@ -2,10 +2,6 @@ import streamlit as st
 import pandas as pd
 import joblib
 import os
-from pathlib import Path
-
-# Constants
-MODELS_DIR = "models"
 
 @st.cache_resource
 def load_models():
@@ -15,40 +11,34 @@ def load_models():
     """
     models = {}
     try:
-        # Load standard models
-        for model_file in Path(MODELS_DIR).glob("*_model.joblib"):
-            model_name = model_file.stem.replace('_model', '')
-            models[model_name] = joblib.load(model_file)
+        # List of expected model files
+        model_files = [
+            'GBM_model.joblib',
+            'Random Forest_model.joblib',
+            'XGBoost_model.joblib',
+            'Stacking_model.joblib'
+        ]
         
-        # Load CatBoost model separately if it exists
-        catboost_path = Path(MODELS_DIR) / "CatBoost_model.cbm"
-        if catboost_path.exists():
-            from catboost import CatBoostClassifier
-            models['CatBoost'] = CatBoostClassifier()
-            models['CatBoost'].load_model(catboost_path)
+        # Load models
+        for model_file in model_files:
+            try:
+                model_path = os.path.join('models', model_file)
+                if os.path.exists(model_path):
+                    model_name = model_file.replace('_model.joblib', '')
+                    models[model_name] = joblib.load(model_path)
+                else:
+                    st.warning(f"Model file not found: {model_file}")
+            except Exception as e:
+                st.warning(f"Error loading {model_file}: {str(e)}")
+        
+        if not models:
+            st.error("No models could be loaded. Please check model files.")
+            return None
             
         return models
     except Exception as e:
         st.error(f"Error loading models: {str(e)}")
         return None
-
-@st.cache_resource
-def load_model_info():
-    """Load model feature information"""
-    try:
-        return joblib.load(Path(MODELS_DIR) / "model_info.joblib")
-    except Exception as e:
-        st.error(f"Error loading model info: {str(e)}")
-        return None
-
-def create_feature_input(feature, feature_type):
-    """Create appropriate input widget based on feature type"""
-    if feature in ['International plan', 'Voice mail plan']:
-        return st.selectbox(feature, ['No', 'Yes'])
-    elif 'int' in feature_type:
-        return st.number_input(feature, value=0, step=1)
-    else:
-        return st.number_input(feature, value=0.0, step=0.1)
 
 def main():
     st.set_page_config(
@@ -61,7 +51,7 @@ def main():
     
     # Load models and info
     models = load_models()
-    model_info = load_model_info()
+    model_info = joblib.load('models/model_info.joblib')
     
     if not models or not model_info:
         st.error("Failed to load necessary model files. Please check if all required files are present in the 'models' directory.")
@@ -90,10 +80,10 @@ def main():
     for i, feature in enumerate(features):
         # Alternate between columns
         with col1 if i % 2 == 0 else col2:
-            input_data[feature] = create_feature_input(
-                feature, 
-                feature_types[feature]
-            )
+            if feature in ['International plan', 'Voice mail plan']:
+                input_data[feature] = st.selectbox(feature, ['No', 'Yes'])
+            else:
+                input_data[feature] = st.number_input(feature, value=0.0)
     
     # Make prediction
     if st.button('🔮 Predict', use_container_width=True):
@@ -121,13 +111,11 @@ def main():
                     st.write(f'Retention probability: {probability[0][0]:.1%}')
             
             with result_col2:
-                # Create a gauge chart using HTML
+                # Show confidence
                 if prediction[0]:
                     churn_prob = probability[0][1] * 100
-                    color = "red"
                 else:
                     churn_prob = probability[0][0] * 100
-                    color = "green"
                 
                 st.write(f"Confidence: {churn_prob:.1f}%")
                 st.progress(churn_prob/100)
