@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import joblib
-from catboost import CatBoostClassifier
 
 @st.cache_resource
 def load_models():
@@ -11,11 +10,6 @@ def load_models():
         'XGBoost': joblib.load('models/XGBoost_model.joblib'),
         'Stacking': joblib.load('models/Stacking_model.joblib')
     }
-    # Load CatBoost separately
-    catboost = CatBoostClassifier()
-    catboost.load_model('models/CatBoost_model.cbm')
-    models['CatBoost'] = catboost
-    
     return models
 
 def main():
@@ -36,11 +30,9 @@ def main():
     input_data = {}
     for feature in model_info['features']:
         # Check feature type
-        if model_info['feature_types'][feature] == 'object':
-            # Categorical features
+        if feature in ['International plan', 'Voice mail plan']:
             input_data[feature] = st.selectbox(feature, ['Yes', 'No'])
         else:
-            # Numerical features
             input_data[feature] = st.number_input(feature, value=0.0)
     
     # Make prediction
